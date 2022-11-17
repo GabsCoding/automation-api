@@ -14,41 +14,9 @@ public class ValidateTaskApiTest {
 
     private static final String FILE_PATH = "src/test/resources/";
 
-    @Test
-    public void validateGeneralSearch() {
-        given()
-                .when()
-                .log()
-                .all()
-                .get(URI + "contacts")
-                .then()
-                .statusCode(200)
-                .body(JsonSchemaValidator.matchesJsonSchema(
-                        new File(FILE_PATH + "GetAllSchema.json")
-                ))
-                .log()
-                .all();
-    }
+    private String id = null;
 
-    @Test
-    public void validateSearchById() {
-        given()
-                .header("content-type", "application/json")
-                .pathParams("id", "156")
-                .when()
-                .log()
-                .all()
-                .get(URI + "contacts/{id}")
-                .then()
-                .statusCode(200)
-                .body(JsonSchemaValidator.matchesJsonSchema(
-                        new File(FILE_PATH + "GetOneSchema.json")
-                ))
-                .log()
-                .all();
-    }
-
-    @Test(dataProvider = "contactInformation")
+    @Test(dataProvider = "contactInformation", priority = 1)
     public void validateContactRegistration(
             String name,
             String lastName,
@@ -88,12 +56,32 @@ public class ValidateTaskApiTest {
 
         Assert.assertNotNull(response.getData().getId());
         Assert.assertEquals(response.getData().getType(), "contacts");
+
+        this.id = response.getData().getId();
     }
 
-    @Test
+     @Test(priority = 2)
+    public void validateSearchById() {
+        given()
+                .header("content-type", "application/json")
+                .pathParams("id", this.id)
+                .when()
+                .log()
+                .all()
+                .get(URI + "contacts/{id}")
+                .then()
+                .statusCode(200)
+                .body(JsonSchemaValidator.matchesJsonSchema(
+                        new File(FILE_PATH + "GetOneSchema.json")
+                ))
+                .log()
+                .all();
+    }
+
+    @Test(priority = 3)
     public void validateContactDeletion() {
         given()
-                .pathParams("id", "3865")
+                .pathParams("id", this.id)
                 .when()
                 .log()
                 .all()
@@ -104,12 +92,28 @@ public class ValidateTaskApiTest {
                 .statusCode(204);
     }
 
+    @Test
+    public void validateGeneralSearch() {
+        given()
+                .when()
+                .log()
+                .all()
+                .get(URI + "contacts")
+                .then()
+                .statusCode(200)
+                .body(JsonSchemaValidator.matchesJsonSchema(
+                        new File(FILE_PATH + "GetAllSchema.json")
+                ))
+                .log()
+                .all();
+    }
+
     @DataProvider(name="contactInformation")
     public Object[][] getData() {
         return new Object[][] {
-                {"Henri", "Marques", "123@gmail.com", "21", "5559595959595", "Saint Edmund", "Bahia", "Salvador"},
-                {"Gustavo", "Robert", "456@gmail.com", "19", "5559595959595", "Tars", "Rio de Janeiro", "Rio de Janeiro"},
-                {"Tales", "Albino", "789@gmail.com", "28", "5559595959595", "Rash Tower", "Sao Paulo", "Sao Paulo"}
+                {"Henri", "Marques", "g@gmail.com", "21", "5559595959595", "Saint Edmund", "Bahia", "Salvador"},
+                {"Gustavo", "Robert", "h@gmail.com", "19", "5559595959595", "Tars", "Rio de Janeiro", "Rio de Janeiro"},
+                {"Tales", "Albino", "r@gmail.com", "28", "5559595959595", "Rash Tower", "Sao Paulo", "Sao Paulo"}
         };
     }
 }
