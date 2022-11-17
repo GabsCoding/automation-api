@@ -1,11 +1,14 @@
 import io.restassured.module.jsv.JsonSchemaValidator;
 import org.testng.annotations.Test;
+
 import java.io.File;
+
 import static io.restassured.RestAssured.given;
 
-public class ValidateTaskApi
-{
+public class ValidateTaskApiTest {
     private static final String URI = "https://api-de-tarefas.herokuapp.com/";
+
+    private static final String FILE_PATH = "src/test/resources/";
 
     @Test
     public void validateGeneralSearch() {
@@ -17,7 +20,7 @@ public class ValidateTaskApi
                 .then()
                 .statusCode(200)
                 .body(JsonSchemaValidator.matchesJsonSchema(
-                        new File("src/test/resources/GetAllSchema.json")
+                        new File(FILE_PATH + "GetAllSchema.json")
                 ))
                 .log()
                 .all();
@@ -27,7 +30,7 @@ public class ValidateTaskApi
     public void validateSearchById() {
         given()
                 .header("content-type", "application/json")
-                .pathParams("id", "3526")
+                .pathParams("id", "156")
                 .when()
                 .log()
                 .all()
@@ -35,7 +38,7 @@ public class ValidateTaskApi
                 .then()
                 .statusCode(200)
                 .body(JsonSchemaValidator.matchesJsonSchema(
-                        new File("src/test/resources/GetOneSchema.json")
+                        new File(FILE_PATH + "GetOneSchema.json")
                 ))
                 .log()
                 .all();
