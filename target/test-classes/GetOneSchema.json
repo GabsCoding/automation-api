@@ -54,7 +54,10 @@
               ]
             },
             "state": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "city": {
               "type": [
