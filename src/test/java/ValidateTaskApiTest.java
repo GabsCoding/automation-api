@@ -10,13 +10,13 @@ import java.io.File;
 import static io.restassured.RestAssured.given;
 
 public class ValidateTaskApiTest {
-    private static final String URI = "https://api-de-tarefas.herokuapp.com/";
+    private static final String ENDPOINT = "https://api-de-tarefas.herokuapp.com/contacts/";
 
     private static final String FILE_PATH = "src/test/resources/";
 
     private String id = null;
 
-    @Test(dataProvider = "contactInformation", priority = 1)
+    @Test(dataProvider = "contactInformationCreate", priority = 1)
     public void validateContactRegistration(
             String name,
             String lastName,
@@ -45,7 +45,7 @@ public class ValidateTaskApiTest {
                 .when()
                 .log()
                 .all()
-                .post(URI + "contacts")
+                .post(ENDPOINT)
                 .then()
                 .log()
                 .all()
@@ -60,7 +60,7 @@ public class ValidateTaskApiTest {
         this.id = response.getData().getId();
     }
 
-     @Test(priority = 2)
+    @Test(priority = 2)
     public void validateSearchById() {
         given()
                 .header("content-type", "application/json")
@@ -68,7 +68,7 @@ public class ValidateTaskApiTest {
                 .when()
                 .log()
                 .all()
-                .get(URI + "contacts/{id}")
+                .get(ENDPOINT + "{id}")
                 .then()
                 .statusCode(200)
                 .body(JsonSchemaValidator.matchesJsonSchema(
@@ -78,27 +78,13 @@ public class ValidateTaskApiTest {
                 .all();
     }
 
-    @Test(priority = 3)
-    public void validateContactDeletion() {
-        given()
-                .pathParams("id", this.id)
-                .when()
-                .log()
-                .all()
-                .delete(URI + "contacts/{id}")
-                .then()
-                .log()
-                .all()
-                .statusCode(204);
-    }
-
     @Test
     public void validateGeneralSearch() {
         given()
                 .when()
                 .log()
                 .all()
-                .get(URI + "contacts")
+                .get(ENDPOINT)
                 .then()
                 .statusCode(200)
                 .body(JsonSchemaValidator.matchesJsonSchema(
@@ -108,12 +94,73 @@ public class ValidateTaskApiTest {
                 .all();
     }
 
-    @DataProvider(name="contactInformation")
-    public Object[][] getData() {
+    @Test(dataProvider = "contactInformationUpdate", priority = 3)
+    public void validateContactUpdate(
+            String name,
+            String lastName,
+            String email,
+            String age,
+            String phone,
+            String address,
+            String state,
+            String city
+    ) {
+        ContactsRequest request = ContactsRequest
+                .builder()
+                .name(name)
+                .lastName(lastName)
+                .email(email)
+                .age(age)
+                .phone(phone)
+                .address(address)
+                .state(state)
+                .city(city)
+                .build();
+
+        ContactsResponse response = given()
+                .header("content-type", "application/json")
+                .pathParams("id", this.id)
+                .body(request)
+                .log()
+                .all()
+                .when()
+                .put(ENDPOINT + "{id}")
+                .then()
+                .statusCode(200)
+                .log()
+                .all()
+                .extract()
+                .body()
+                .as(ContactsResponse.class);
+
+        Assert.assertNotNull(response.getData().getId());
+        Assert.assertEquals(response.getData().getType(), "contacts");}
+
+    @Test(priority = 4)
+    public void validateContactDeletion() {
+        given()
+                .pathParams("id", this.id)
+                .when()
+                .log()
+                .all()
+                .delete(ENDPOINT + "{id}")
+                .then()
+                .log()
+                .all()
+                .statusCode(204);
+    }
+
+    @DataProvider(name="contactInformationCreate")
+    public Object[][] getCreateData() {
         return new Object[][] {
-                {"Henri", "Marques", "g@gmail.com", "21", "5559595959595", "Saint Edmund", "Bahia", "Salvador"},
-                {"Gustavo", "Robert", "h@gmail.com", "19", "5559595959595", "Tars", "Rio de Janeiro", "Rio de Janeiro"},
-                {"Tales", "Albino", "r@gmail.com", "28", "5559595959595", "Rash Tower", "Sao Paulo", "Sao Paulo"}
+                {"Henri", "Marques", "fa@gmail.com", "21", "5559595959595", "Saint Edmund", "Bahia", "Salvador"},
+        };
+    }
+
+    @DataProvider(name="contactInformationUpdate")
+    public Object[][] getUpdateData() {
+        return new Object[][] {
+                {"John", "Doe", "ra@gmail.com", "34", "5558989898989", "Saint Road", "SP", "SP"},
         };
     }
 }
