@@ -1,14 +1,18 @@
 import DTO.Request.ContactsRequest;
 import DTO.Response.ContactsResponse;
+import TestListeners.TestListener;
 import io.restassured.module.jsv.JsonSchemaValidator;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import java.io.File;
 
+import static Reports.ExtentTestManager.startTest;
 import static io.restassured.RestAssured.given;
 
+@Listeners(TestListener.class)
 public class ValidateTaskApiTest {
     private static final String ENDPOINT = "https://api-de-tarefas.herokuapp.com/contacts/";
 
@@ -27,6 +31,8 @@ public class ValidateTaskApiTest {
             String state,
             String city
     ) {
+        startTest("validateContactRegistration", "validate contact registration");
+
         ContactsRequest request = ContactsRequest
                 .builder()
                 .name(name)
@@ -62,6 +68,8 @@ public class ValidateTaskApiTest {
 
     @Test(priority = 2)
     public void validateSearchById() {
+        startTest("validateSearchById", "validate search by id");
+
         given()
                 .header("content-type", "application/json")
                 .pathParams("id", this.id)
@@ -80,6 +88,8 @@ public class ValidateTaskApiTest {
 
     @Test
     public void validateGeneralSearch() {
+        startTest("validateGeneralSearch", "validate general search");
+
         given()
                 .when()
                 .log()
@@ -105,6 +115,8 @@ public class ValidateTaskApiTest {
             String state,
             String city
     ) {
+        startTest("validateContactUpdate", "validate contact update");
+
         ContactsRequest request = ContactsRequest
                 .builder()
                 .name(name)
@@ -138,6 +150,8 @@ public class ValidateTaskApiTest {
 
     @Test(priority = 4)
     public void validateContactDeletion() {
+        startTest("validateContactDeletion", "validate contact deletion");
+
         given()
                 .pathParams("id", this.id)
                 .when()
